@@ -1,0 +1,18 @@
+{
+  "name": "cf_ai_kaushikprabhakar_project",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260331.1",
+    "agents": "^0.8.7",
+    "typescript": "^6.0.2"
+  }
+}
