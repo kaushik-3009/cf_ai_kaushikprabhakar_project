@@ -2,7 +2,8 @@
 
 This repository implements a highly-available, low-latency AI chat agent deployed entirely on the Cloudflare network. It demonstrates edge-native state management, real-time bidirectional communication, and localized AI inference without relying on centralized cloud providers (like AWS or GCP).
 
-Link to Product: [here](https://5ef9bab5.cf-ai-chatbot-frontend-axh.pages.dev/)
+Link to Product: [here](https://main.cf-ai-chatbot-frontend-axh.pages.dev/)
+
 ## Architecture
 
 The system is built on four core Cloudflare primitives:
@@ -88,7 +89,7 @@ npx wrangler pages deploy public --project-name=cf-ai-chatbot-frontend
 ## Features Implemented
 - [x] Strongly consistent conversation memory.
 - [x] Edge-localized AI inference.
-- [ ] Real-time token streaming (In Progress).
+- [x] Real-time token streaming (In Progress).
 - [ ] WebSocket integration for persistent connections (In Progress).
 - [ ] Markdown parsing & syntax highlighting (In Progress).
 - [ ] Turnstile Bot Protection (In Progress).

@@ -1,0 +1,99 @@
+{
+    "wallTime": 0,
+    "cpuTime": 0,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "bc57ffb1-081c-4883-8e0d-abb990b92500"
+    },
+    "scriptName": "cf-ai-chatbot",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [],
+    "eventTimestamp": 1774996566677,
+    "event": {
+        "request": {
+            "url": "https://cf-ai-chatbot.kaushik-sp2002.workers.dev/?session_id=REDACTED",
+            "method": "GET",
+            "headers": {
+                "accept-encoding": "gzip, br",
+                "accept-language": "en-US,en;q=0.9",
+                "cache-control": "no-cache",
+                "cf-connecting-ip": "131.193.99.151",
+                "cf-ipcountry": "US",
+                "cf-ray": "9e52d4bdafbc22b9",
+                "cf-visitor": "{\"scheme\":\"https\"}",
+                "connection": "Upgrade",
+                "host": "cf-ai-chatbot.kaushik-sp2002.workers.dev",
+                "origin": "https://main.cf-ai-chatbot-frontend-axh.pages.dev",
+                "pragma": "no-cache",
+                "sec-websocket-extensions": "permessage-deflate; client_max_window_bits",
+                "sec-websocket-key": "REDACTED",
+                "sec-websocket-version": "13",
+                "upgrade": "websocket",
+                "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+                "x-forwarded-proto": "https",
+                "x-real-ip": "131.193.99.151"
+            },
+            "cf": {
+                "clientTcpRtt": 5,
+                "requestHeaderNames": {},
+                "httpProtocol": "HTTP/1.1",
+                "tlsCipher": "AEAD-AES128-GCM-SHA256",
+                "continent": "NA",
+                "asn": 6200,
+                "clientAcceptEncoding": "gzip, deflate, br",
+                "verifiedBotCategory": "",
+                "country": "US",
+                "isEUCountry": false,
+                "region": "Illinois",
+                "tlsClientCiphersSha1": "ry+H1+NRAU3W1qhijl/LGes3+Xs=",
+                "tlsClientAuth": {
+                    "certIssuerDNLegacy": "",
+                    "certIssuerSKI": "",
+                    "certSubjectDNRFC2253": "",
+                    "certSubjectDNLegacy": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certSKI": "",
+                    "certSerial": "",
+                    "certIssuerDN": "",
+                    "certVerified": "NONE",
+                    "certNotAfter": "",
+                    "certSubjectDN": "",
+                    "certPresented": "0",
+                    "certRevoked": "0",
+                    "certIssuerSerial": "",
+                    "certIssuerDNRFC2253": "",
+                    "certFingerprintSHA1": ""
+                },
+                "tlsClientRandom": "r3u1AKq32cFlUGvJX6ZceVzTA2EduzdZkDoA7AuTJco=",
+                "tlsExportedAuthenticator": {
+                    "clientFinished": "457ba0486eb27d05a0905f4c83ce088477b8af8c7b68f37eb1ea250ca290f467",
+                    "clientHandshake": "a42d12114b3b5a9ac1fc55d1cdd8af01dd9dd4fa64aadd6c3a02fd9ec8599113",
+                    "serverHandshake": "a4fb44c5f70654c7b7b7a0031025f242f8fecb507035569064b02e2ccf5828cd",
+                    "serverFinished": "735e82e96d9a02cde7ed87a51159f81f3faf00e62a249d7b2e91f0863cc5395b"
+                },
+                "tlsClientHelloLength": "1738",
+                "colo": "ORD",
+                "timezone": "America/Chicago",
+                "longitude": "-87.65005",
+                "latitude": "41.85003",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestPriority": "",
+                "postalCode": "60602",
+                "city": "Chicago",
+                "tlsVersion": "TLSv1.3",
+                "regionCode": "IL",
+                "asOrganization": "University of Illinois Chicago",
+                "metroCode": "602",
+                "tlsClientExtensionsSha1Le": "SJS8crkITZlylnMRHSy4Acd/Qbs=",
+                "tlsClientExtensionsSha1": "F1LyH28eL8JGcTupe8LpZyD4LWg="
+            }
+        },
+        "response": {
+            "status": 500
+        }
+    }
+}

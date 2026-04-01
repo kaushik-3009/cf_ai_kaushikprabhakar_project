@@ -1,3 +1,4 @@
+import { routeAgentRequest } from 'agents';
 import { ChatAgent } from './ChatAgent';
 
 export interface Env {
@@ -14,38 +15,33 @@ export default {
       'Access-Control-Allow-Headers': 'Content-Type',
     };
 
-    // Handle CORS preflight requests
     if (request.method === 'OPTIONS') {
       return new Response(null, { headers: corsHeaders });
     }
 
-    const url = new URL(request.url);
+    // The Cloudflare Agents SDK requires this router to inject namespace headers
+    // It will automatically match paths like /agents/ChatAgent/{id}
+    const agentResponse = await routeAgentRequest(request, env);
+    if (agentResponse) {
+      return agentResponse;
+    }
 
+    const url = new URL(request.url);
+    const sessionId = url.searchParams.get('session_id') || 'default-session';
+
+    // API endpoint for direct message sending (fallback)
     if (request.method === 'POST' && url.pathname === '/api/chat') {
       try {
         const body: { session_id?: string; message?: string } = await request.json();
-        
-        if (!body.session_id || !body.message) {
-          return new Response('Missing session_id or message', { 
-            status: 400, 
-            headers: corsHeaders 
-          });
-        }
+        const targetSession = body.session_id || sessionId;
+        const targetId = env.ChatAgent.idFromName(targetSession);
+        const targetStub = env.ChatAgent.get(targetId) as any;
 
-        // Derive the Durable Object ID from the session_id
-        const id = env.ChatAgent.idFromName(body.session_id);
-        
-        // Get the DO stub
-        const stub = env.ChatAgent.get(id) as any;
+        // Calling sendMessage via RPC
+        await targetStub.sendMessage(body.message);
 
-        // Route the user's message to the sendMessage method via RPC
-        const aiResponse = await stub.sendMessage(body.message);
-
-        return new Response(JSON.stringify({ response: aiResponse }), {
-          headers: { 
-            ...corsHeaders, 
-            'Content-Type': 'application/json' 
-          },
+        return new Response(JSON.stringify({ success: true }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       } catch (error: any) {
         return new Response(JSON.stringify({ error: error.message }), { 
@@ -55,6 +51,9 @@ export default {
       }
     }
 
-    return new Response('Not found', { status: 404, headers: corsHeaders });
+    // Serve a basic diagnostic if someone hits the root via HTTP
+    return new Response(`Cloudflare AI Agent Backend Live. Session: ${sessionId}`, { 
+      headers: { ...corsHeaders, 'Content-Type': 'text/plain' } 
+    });
   }
 };

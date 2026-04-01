@@ -14,32 +14,72 @@ export interface ChatState {
 }
 
 export class ChatAgent extends Agent<Env, ChatState> {
-  initialState = { messages: [] };
+  initialState = { 
+    messages: [
+      { role: 'system', content: 'You are a helpful and technical Cloudflare AI Assistant. You specialize in the Cloudflare Developer Platform (Workers, Pages, Durable Objects, R2, D1, etc.). Use Markdown for formatting and code blocks where appropriate.' }
+    ] 
+  };
 
   @callable()
-  async sendMessage(userMessage: string): Promise<string> {
-    // Access state directly from this.state
+  async sendMessage(userMessage: string): Promise<void> {
     const messages = [...this.state.messages];
-    
-    // Append the new user message
     messages.push({ role: 'user', content: userMessage });
     
-    // Call Workers AI with the Llama 3.3 model and the full conversation history
-    const response = await this.env.AI.run(
+    // Optimistically update state with user message
+    this.setState({ messages });
+
+    // Call Workers AI with streaming enabled
+    const stream = await this.env.AI.run(
       '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
       {
-        messages: messages
+        messages: messages,
+        stream: true
       }
-    );
+    ) as ReadableStream;
+
+    let fullResponse = '';
     
-    const aiMessage = response.response || '';
-    
-    // Append the AI's response
-    messages.push({ role: 'assistant', content: aiMessage });
-    
-    // Save the updated state using this.setState (shallow merge)
+    // Read the streaming response from Workers AI
+    const reader = stream.getReader();
+    const decoder = new TextDecoder();
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const chunkText = decoder.decode(value, { stream: true });
+      const lines = chunkText.split('\n');
+
+      for (const line of lines) {
+        if (line.startsWith('data: ') && line !== 'data: [DONE]') {
+          try {
+            const data = JSON.parse(line.substring(6));
+            if (data.response) {
+              fullResponse += data.response;
+              
+              // Broadcast partial token to frontend
+              this.broadcast(JSON.stringify({
+                type: 'token',
+                text: data.response,
+                isFinal: false
+              }));
+            }
+          } catch (e) {
+            // Ignore incomplete JSON chunks, they will be handled in the next read
+          }
+        }
+      }
+    }
+
+    // Append final message to state and save
+    messages.push({ role: 'assistant', content: fullResponse });
     this.setState({ messages });
-    
-    return aiMessage;
+
+    // Signal completion
+    this.broadcast(JSON.stringify({
+      type: 'token',
+      text: '',
+      isFinal: true
+    }));
   }
 }

@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Agent Chatbot</title>
+    <title>Cloudflare Agent | Streaming</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         :root {
             --primary: #0061ff;
             --primary-hover: #0052d9;
-            --bg: #f8fafc;
+            --bg: #f4f4f9;
             --chat-bg: #ffffff;
             --text: #1e293b;
             --text-muted: #64748b;
@@ -20,7 +21,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
         body {
-            font-family: 'Inter', -apple-system, sans-serif;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
             background: var(--bg);
             color: var(--text);
             height: 100vh;
@@ -32,32 +33,29 @@
 
         #app {
             width: 100%;
-            max-width: 600px;
+            max-width: 800px;
             height: 90vh;
             background: var(--chat-bg);
             display: flex;
             flex-direction: column;
-            border-radius: 16px;
+            border-radius: 12px;
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
             border: 1px solid var(--border);
+            overflow: hidden;
         }
 
         header {
-            padding: 1.5rem;
+            padding: 1.2rem 1.5rem;
             border-bottom: 1px solid var(--border);
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 12px;
+            background: #fff;
         }
 
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            background: #10b981;
-            border-radius: 50%;
-            box-shadow: 0 0 8px #10b981;
-        }
+        .header-left { display: flex; align-items: center; gap: 12px; }
+        .status-dot { width: 10px; height: 10px; background: #ccc; border-radius: 50%; transition: 0.3s; }
+        .status-dot.connected { background: #10b981; box-shadow: 0 0 8px #10b981; }
 
         h1 { font-size: 1.1rem; font-weight: 600; }
 
@@ -67,152 +65,191 @@
             padding: 1.5rem;
             display: flex;
             flex-direction: column;
-            gap: 1rem;
-            scroll-behavior: smooth;
+            gap: 1.5rem;
         }
 
         .message {
             max-width: 85%;
-            padding: 12px 16px;
+            padding: 1rem 1.2rem;
             border-radius: 12px;
             font-size: 0.95rem;
             line-height: 1.5;
-            animation: fadeIn 0.3s ease;
+            animation: fadeIn 0.2s ease;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(5px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        .message p { margin-bottom: 0.5rem; }
+        .message code { background: rgba(0,0,0,0.05); padding: 2px 4px; border-radius: 4px; font-family: monospace; }
+        .message pre { background: #1e293b; color: #fff; padding: 1rem; border-radius: 8px; overflow-x: auto; margin: 0.5rem 0; }
 
-        .user {
-            align-self: flex-end;
-            background: var(--user-msg);
-            color: white;
-            border-bottom-right-radius: 2px;
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        .assistant {
-            align-self: flex-start;
-            background: var(--ai-msg);
-            color: var(--text);
-            border-bottom-left-radius: 2px;
-        }
-
-        .loading-msg {
-            font-style: italic;
-            color: var(--text-muted);
-            font-size: 0.85rem;
-            margin-top: 4px;
-            display: none;
-        }
+        .user { align-self: flex-end; background: var(--user-msg); color: white; border-bottom-right-radius: 2px; }
+        .assistant { align-self: flex-start; background: var(--ai-msg); color: var(--text); border-bottom-left-radius: 2px; }
 
         .input-container {
-            padding: 1.25rem;
+            padding: 1.5rem;
             border-top: 1px solid var(--border);
+            background: #fff;
             display: flex;
-            gap: 10px;
+            gap: 12px;
         }
 
         input {
             flex: 1;
-            padding: 12px 18px;
+            padding: 14px 20px;
+            background: #fff;
             border: 1px solid var(--border);
-            border-radius: 9999px;
+            border-radius: 24px;
             outline: none;
-            transition: border-color 0.2s;
-            font-size: 0.95rem;
+            font-size: 1rem;
         }
-
-        input:focus { border-color: var(--primary); }
 
         button {
             background: var(--primary);
             color: white;
             border: none;
             padding: 0 24px;
-            border-radius: 9999px;
+            border-radius: 24px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
         }
 
-        button:hover { background: var(--primary-hover); transform: scale(1.02); }
-        button:active { transform: scale(0.98); }
-        button:disabled { background: var(--border); cursor: not-allowed; }
+        button:disabled { background: #cbd5e1; cursor: not-allowed; }
+        .debug-info { position: fixed; bottom: 10px; right: 10px; font-size: 10px; color: #999; }
     </style>
 </head>
 <body>
 
     <div id="app">
         <header>
-            <div class="status-dot"></div>
-            <h1>Llama 3.3 Context-Aware Agent</h1>
+            <div class="header-left">
+                <div id="status" class="status-dot"></div>
+                <h1>Cloudflare AI Agent</h1>
+            </div>
+            <div style="font-size: 0.85rem; color: var(--text-muted);">Llama 3.3 (Streaming)</div>
         </header>
 
         <div id="chat-window">
-            <div class="message assistant">Hello! I'm your Cloudflare-powered AI Agent. How can I help you today?</div>
+            <div class="message assistant">Hello! I'm your AI Agent. Ask me anything.</div>
         </div>
-
-        <div id="loading-indicator" class="loading-msg" style="padding: 0 1.5rem 0.5rem 1.5rem;">Agent is thinking...</div>
 
         <div class="input-container">
-            <input type="text" id="user-input" placeholder="Ask your agent anything..." autocomplete="off">
-            <button id="send-btn">Send</button>
+            <input type="text" id="user-input" placeholder="Initializing..." disabled>
+            <button id="send-btn" disabled>Send</button>
         </div>
     </div>
+    <div id="debug" class="debug-info">Disconnected</div>
 
     <script>
-        const API_URL = 'https://cf-ai-chatbot.kaushik-sp2002.workers.dev/api/chat';
-        const sessionId = localStorage.getItem('chat_session_id') || crypto.randomUUID();
-        localStorage.setItem('chat_session_id', sessionId);
+        const API_BASE = 'cf-ai-chatbot.kaushik-sp2002.workers.dev';
+        const sessionId = localStorage.getItem('agent_sid') || crypto.randomUUID();
+        localStorage.setItem('agent_sid', sessionId);
+
+        let ws;
+        let currentAssistantMessageDiv = null;
+        let currentResponseText = '';
 
         const chatWindow = document.getElementById('chat-window');
         const userInput = document.getElementById('user-input');
         const sendBtn = document.getElementById('send-btn');
-        const loading = document.getElementById('loading-indicator');
+        const statusDot = document.getElementById('status');
+        const debug = document.getElementById('debug');
 
-        function addMessage(role, text) {
+        function connect() {
+            debug.innerText = 'Connecting...';
+            // Use the standard Agents SDK routing path: /agents/chat-agent/{sessionId}
+            // Note: Cloudflare's underlying partyserver routing converts CamelCase (ChatAgent) to kebab-case (chat-agent)
+            const wsUrl = `wss://${API_BASE}/agents/chat-agent/${sessionId}`;
+            console.log('Connecting to:', wsUrl);
+            
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = () => {
+                console.log('WebSocket Connected');
+                debug.innerText = 'Connected';
+                statusDot.classList.add('connected');
+                userInput.disabled = false;
+                sendBtn.disabled = false;
+                userInput.placeholder = "Type a message...";
+                userInput.focus();
+            };
+
+            ws.onmessage = (event) => {
+                console.log('WS Message:', event.data);
+                try {
+                    const data = JSON.parse(event.data);
+                    
+                    if (data.type === 'token') {
+                        if (!currentAssistantMessageDiv) {
+                            currentAssistantMessageDiv = createMessageDiv('assistant');
+                            currentResponseText = '';
+                        }
+                        
+                        if (data.isFinal) {
+                            currentAssistantMessageDiv = null;
+                            userInput.disabled = false;
+                            sendBtn.disabled = false;
+                            userInput.focus();
+                            return;
+                        }
+
+                        currentResponseText += data.text;
+                        currentAssistantMessageDiv.innerHTML = marked.parse(currentResponseText);
+                        chatWindow.scrollTop = chatWindow.scrollHeight;
+                    }
+                } catch (e) {
+                    console.error('Parse error:', e);
+                }
+            };
+
+            ws.onerror = (err) => {
+                console.error('WS Error:', err);
+                debug.innerText = 'Error connecting';
+            };
+
+            ws.onclose = (e) => {
+                console.log('WS Closed:', e.code, e.reason);
+                debug.innerText = `Closed (${e.code})`;
+                statusDot.classList.remove('connected');
+                userInput.disabled = true;
+                sendBtn.disabled = true;
+                userInput.placeholder = "Reconnecting...";
+                setTimeout(connect, 3000);
+            };
+        }
+
+        function createMessageDiv(role) {
             const div = document.createElement('div');
             div.className = `message ${role}`;
-            div.textContent = text;
             chatWindow.appendChild(div);
             chatWindow.scrollTop = chatWindow.scrollHeight;
+            return div;
         }
 
-        async function handleSend() {
-            const message = userInput.value.trim();
-            if (!message) return;
+        async function sendMessage() {
+            const text = userInput.value.trim();
+            if (!text || !ws || ws.readyState !== WebSocket.OPEN) return;
+
+            currentAssistantMessageDiv = null;
+            const userDiv = createMessageDiv('user');
+            userDiv.textContent = text;
+            
+            ws.send(JSON.stringify({
+                type: 'rpc',
+                id: crypto.randomUUID(),
+                method: 'sendMessage',
+                args: [text]
+            }));
 
             userInput.value = '';
-            addMessage('user', message);
-            
+            userInput.disabled = true;
             sendBtn.disabled = true;
-            loading.style.display = 'block';
-
-            try {
-                const res = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ session_id: sessionId, message })
-                });
-
-                const data = await res.json();
-                if (data.error) throw new Error(data.error);
-                
-                addMessage('assistant', data.response);
-            } catch (err) {
-                console.error(err);
-                addMessage('assistant', '⚠️ Error: ' + err.message);
-            } finally {
-                sendBtn.disabled = false;
-                loading.style.display = 'none';
-                userInput.focus();
-            }
         }
 
-        sendBtn.onclick = handleSend;
-        userInput.onkeypress = (e) => { if (e.key === 'Enter') handleSend(); };
+        sendBtn.onclick = sendMessage;
+        userInput.onkeypress = (e) => { if (e.key === 'Enter') sendMessage(); };
+
+        connect();
     </script>
 </body>
 </html>
