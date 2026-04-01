@@ -90,6 +90,6 @@ npx wrangler pages deploy public --project-name=cf-ai-chatbot-frontend
 - [x] Strongly consistent conversation memory.
 - [x] Edge-localized AI inference.
 - [x] Real-time token streaming (In Progress).
-- [ ] WebSocket integration for persistent connections (In Progress).
-- [ ] Markdown parsing & syntax highlighting (In Progress).
-- [ ] Turnstile Bot Protection (In Progress).
+- [x] WebSocket integration for persistent connections (In Progress).
+- [x] Markdown parsing & syntax highlighting (In Progress).
+- [x] Turnstile Bot Protection (In Progress).
